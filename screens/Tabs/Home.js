@@ -1,38 +1,59 @@
 import React, { useState } from "react";
-import { ScrollView, RefreshControl, Text } from "react-native";
+import { ScrollView, RefreshControl, Text, LogBox } from "react-native";
 import styled from "styled-components";
 import { gql } from "apollo-boost";
 import Loader from "../../components/Loader";
 import { useQuery } from "react-apollo-hooks";
 import NewsList from "../../components/NewsList";
-// import Post from "../../components/Post";
 
 export const NEWSES_QUERY = gql`
-  {
-    seeNewses {
+  query seeNewses($offset: Int!, $limit: Int!) {
+    seeNewses(offset: $offset, limit: $limit) {
       id
       newsurl
       imgurl
       title
       PostCount
+      createdAt
     }
   }
 `;
 
 const View = styled.View`
-  padding-top: 30px;
   justify-content: center;
   align-items: center;
   flex: 1;
+  padding-top: 10px;
   background-color: ${(props) => props.theme.whiteColor};
 `;
 
-export default ({navigation}) => {
+export default ({ navigation }) => {
   navigation.setOptions({
-    title: "Home, SearchInput"
+    title: "새 댓글",
   });
   const [refreshing, setRefreshing] = useState(false);
-  const { loading, data, refetch } = useQuery(NEWSES_QUERY);
+  const { loading, data, refetch, fetchMore } = useQuery(NEWSES_QUERY, {
+    variables: {
+      offset: 0,
+      limit: 20,
+    },
+    fetchPolicy: "network-only",
+  });
+
+  const onLoadMore = async () => {
+    await fetchMore({
+      variables: {
+        offset: data.seeNewses.length,
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return Object.assign({}, prev, {
+          seeNewses: [...prev.seeNewses, ...fetchMoreResult.seeNewses],
+        });
+      },
+    });
+  };
+
   const refresh = async () => {
     try {
       setRefreshing(true);
@@ -43,23 +64,23 @@ export default ({navigation}) => {
       setRefreshing(false);
     }
   };
+
   return (
     <View>
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
+        onMomentumScrollEnd={() => {
+          onLoadMore();
+        }}
       >
-        {loading ? (
-          <Loader />
-        ) : (
-          data &&
+        {data &&
           data.seeNewses &&
-          data.seeNewses.map((news) => <NewsList key={news.id} {...news} />)
-          //
-          // <Text key={news.id}  >{news.title}</Text>
-        )}
+          data.seeNewses.map((news, index) => <NewsList key={index} {...news} />)}
       </ScrollView>
     </View>
+
+    
   );
 };

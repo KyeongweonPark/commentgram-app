@@ -8,11 +8,11 @@ import { useQuery } from "react-apollo-hooks";
 import { AntDesign } from "@expo/vector-icons";
 import styles from "../../styles";
 
-const NEWSURL = "https://m.entertain.naver.com/home";
+const NEWSURL = "https://entertain.daum.net/";
 
-export const CRAWLNEWSNAVER = gql`
-  query crawlNewsNaver($newsurl: String!) {
-    crawlNewsNaver(newsurl: $newsurl) {
+export const CRAWLNEWSDAUM = gql`
+  query crawlNewsDaum($newsurl: String!) {
+    crawlNewsDaum(newsurl: $newsurl) {
       id
       title
       newsurl
@@ -46,7 +46,7 @@ export default ({ navigation }) => {
   const [canGoBack, setCanGoBack] = useState(false);
   const [key, setKey] = useState(0);
   const webviewRef = useRef(null);
-  const { data, loading, refetch } = useQuery(CRAWLNEWSNAVER, {
+  const { data, loading, refetch } = useQuery(CRAWLNEWSDAUM, {
     variables: { newsurl: currentUrl },
     fetchPolicy: "network-only",
   });
@@ -64,7 +64,7 @@ export default ({ navigation }) => {
 
   const homeButtonHandler = () => {
     setCurrentUrl(NEWSURL);
-    setCurrentTitle("네이버 TV연예");
+    setCurrentTitle("다음 연예");
     setKey(key + 1);
     if (webviewRef.current) {
       webviewRef.current.reload();
@@ -79,7 +79,7 @@ export default ({ navigation }) => {
     headerLeft: () => (
       <HeaderLeftContainer>
         {currentUrl == NEWSURL ||
-        currentUrl == "https://entertain.naver.com/home" ? null : (
+        currentUrl == "https://entertain.daum.net" ? null : (
           <TouchableOpacityButton onPress={backButtonHandler}>
             <AntDesign size={25} color={styles.blackColor} name={"left"} />
           </TouchableOpacityButton>
@@ -97,7 +97,8 @@ export default ({ navigation }) => {
         <IconView>
           <AntDesign size={30} color={styles.darkGreyColor} name={"message1"} />
         </IconView>
-      ) : newsurl.slice(0, 25) == "https://n.news.naver.com/" ? (
+      ) : newsurl.slice(0, 31) == "https://entertain.v.daum.net/v/" ||
+        newsurl.slice(0, 26) == "https://news.v.daum.net/v/" ? (
         UrlLink({ newsurl, title, imgurl })
       ) : (
         <IconView>
@@ -106,10 +107,10 @@ export default ({ navigation }) => {
       ),
   });
 
-  if (data && data.crawlNewsNaver) {
-    newsurl = data.crawlNewsNaver[0].newsurl;
-    title = data.crawlNewsNaver[0].title;
-    imgurl = data.crawlNewsNaver[0].imgurl;
+  if (data && data.crawlNewsDaum) {
+    newsurl = data.crawlNewsDaum[0].newsurl;
+    title = data.crawlNewsDaum[0].title;
+    imgurl = data.crawlNewsDaum[0].imgurl;
     // console.log(newsurl, title, imgurl);
   }
 

@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 import constants from "../constants";
+import { Keyboard } from "react-native";
 
 const Container = styled.View`
   margin-bottom: 10px;
@@ -25,8 +26,8 @@ const PostInput = ({
   keyboardType = "default",
   autoCapitalize = "none",
   onChange,
-  returnKeyType = "default",
-  onSubmitEditing = () => null,
+  returnKeyType = "done",
+  onSubmitEditing = ()=>{Keyboard.dismiss()},
   autoCorrect = true,
 }) => (
   <Container>
@@ -41,7 +42,7 @@ const PostInput = ({
       autoCorrect={autoCorrect}
       multiline={true}
       maxLength={200}
-      // onFocus={}
+      blurOnSubmit = {true}
     />
   </Container>
 );

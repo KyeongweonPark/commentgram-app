@@ -54,7 +54,7 @@ export default ({ route, navigation }) => {
     fetchPolicy: "network-only",
   });
   const [addNewsMutation] = useMutation(ADDNEWS, {
-    skip: data === !undefined,
+    skip: checkNews,
     variables: {
       newsurl,
       imgurl,
@@ -79,18 +79,18 @@ export default ({ route, navigation }) => {
         const {
           data: { addNews },
         } = await addNewsMutation();
-        setCheckNews(true);
-      } else {
-        setCheckNews(true);
-      }
+        // setCheckNews(true);
+      } 
     } catch (e) {
       setCheckNews(false);
     } finally {
+      setCheckNews(true);
       setLoading(false);
     }
   };
-
-  checkExsiting();
+  if (checkNews == false) {
+    checkExsiting();
+  }
 
   return (
     <ScrollView
@@ -107,7 +107,9 @@ export default ({ route, navigation }) => {
         ) : (
           data &&
           data.UrlSearchNews &&
-          data.UrlSearchNews.map((news) => <PostDetail key={news.id} {...news} />)
+          data.UrlSearchNews.map((news) => (
+            <PostDetail key={news.id} {...news} />
+          ))
         )}
       </View>
     </ScrollView>

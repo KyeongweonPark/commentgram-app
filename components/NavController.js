@@ -9,6 +9,7 @@ export default () => {
   const isLoggedIn = useIsLoggedIn();
   const logIn = useLogIn();
   const logOut = useLogOut();
+  
   return (
     <View style={{ flex: "1" }}>
       {isLoggedIn ? <MainNavigation /> : <AuthNavigation />}

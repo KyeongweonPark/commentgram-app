@@ -14,6 +14,8 @@ import NavController from "./components/NavController";
 import { AuthProvider } from "./AuthContext";
 import styles from "./styles";
 
+
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [client, setClient] = useState(null);
@@ -24,7 +26,7 @@ export default function App() {
       await Font.loadAsync({
         ...Ionicons.font,
       });
-      await Asset.loadAsync([require("./assets/logo.png")]);
+      // await Asset.loadAsync([require("./assets/logo.png")]);
       const cache = new InMemoryCache();
       await persistCache({
         cache,

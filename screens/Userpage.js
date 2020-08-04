@@ -7,9 +7,9 @@ import { useQuery } from "react-apollo-hooks";
 import UserProfile from "../components/UserProfile";
 import styles from "../styles";
 
-export const ME = gql`
-  {
-    me {
+export const SEEUSER = gql`
+  query seeUser($userId: String!) {
+    seeUser(userId: $userId) {
       id
       username
       email
@@ -17,28 +17,15 @@ export const ME = gql`
       postsCount
       commentsCount
       reportersCount
+      reportingCount
       fullName
-      posts
-      {
-        id
-        description
-        CommentCount
-        UpCount
-        DownCount
-        newsurl{
-          id
-          title
-          newsurl
-          imgurl
-        }
-      }
       createdAt
+      isSelf
     }
   }
 `;
 
 const View = styled.View`
-  padding-top: 30px;
   justify-content: center;
   align-items: center;
   flex: 1;
@@ -48,17 +35,23 @@ const View = styled.View`
 const Text = styled.Text``;
 
 export default ({ route, navigation }) => {
-  // const { data, loading } = useQuery(ME);
-  const {id} = route.params;
-  console.log(id);
+  const { id } = route.params;
+  const { data, loading } = useQuery(SEEUSER, {
+    variables: {
+      userId: id,
+    },
+    fetchPolicy: "network-only",
+    });
+
   return (
+    // <View>
+    //   <Text>userpage</Text>
+    //   <Text>id: {id}</Text>
+    // </View>
     <View>
-    {/* <ScrollView style={{ backgroundColor: styles.whiteColor, paddingTop: 100,}} contentContainerStyle={{alignSelf:"flex-start"}}>
-      {loading ? <Loader /> : data && data.me && <UserProfile {...data.me} />}
-      
-    </ScrollView> */}
-    <Text>userpage</Text>
-    <Text>id: {id}</Text>
+
+        {loading ? <Loader /> : data.seeUser && data.seeUser && <UserProfile {...data.seeUser} />}
+
     </View>
   );
 };

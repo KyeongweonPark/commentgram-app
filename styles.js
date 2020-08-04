@@ -7,4 +7,7 @@ export default {
     blueColor: "#3897f0",
     darkBlueColor: "#003569",
     whiteColor: "#FFFFFF",
+    upColor: "#E8444F",
+    downColor: "#4884E6",
+    reportColor: "#E8444F",
   };

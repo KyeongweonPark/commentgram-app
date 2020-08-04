@@ -8,11 +8,29 @@ import { Alert } from "react-native";
 import { useMutation } from "react-apollo-hooks";
 import { LOG_IN, CONFIRM_SECRET } from "./AuthQueries";
 import { useLogIn } from "../../AuthContext";
+import * as Animatable from "react-native-animatable";
+import { AntDesign } from "@expo/vector-icons";
+import styles from "../../styles";
 
 const View = styled.View`
   justify-content: center;
   align-items: center;
   flex: 1;
+`;
+
+const TitleText = styled.Text`
+  color: ${(props) => props.theme.blackColor};
+  font-family: Snell Roundhand;
+  font-size: 40px;
+  font-weight: 600;
+`;
+
+const Container = styled.View`
+  margin-bottom: 50px;
+`;
+
+const ContainerBottom = styled.View`
+  margin-bottom: 150px;
 `;
 
 // export default ({ navigation }) => {
@@ -32,7 +50,7 @@ export default ({ route, navigation }) => {
   const [confirmSecretMutation] = useMutation(CONFIRM_SECRET, {
     variables: {
       secret: confirmInput.value,
-      email : route.params.email,
+      email: route.params.email,
     },
   });
 
@@ -62,6 +80,18 @@ export default ({ route, navigation }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View>
+        <Container>
+          <TitleText>Commentagram</TitleText>
+        </Container>
+        <Container>
+          <Animatable.View
+            animation="pulse"
+            easing="ease-out"
+            iterationCount="infinite"
+          >
+            <AntDesign size={80} color={styles.blackColor} name={"message1"} />
+          </Animatable.View>
+        </Container>
         <AuthInput
           {...confirmInput}
           placeholder="Secret"
@@ -70,6 +100,7 @@ export default ({ route, navigation }) => {
           autoCorrect={false}
         />
         <AuthButton loading={loading} onPress={handleConfirm} text="Confirm" />
+        <ContainerBottom></ContainerBottom>
       </View>
     </TouchableWithoutFeedback>
   );

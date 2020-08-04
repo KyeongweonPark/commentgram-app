@@ -4,13 +4,15 @@ import { View, Platform, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../screens/Tabs/Home";
 import NaverNews from "../screens/Tabs/NaverNews";
+import DaumNews from "../screens/Tabs/DaumNews";
 import Ranked from "../screens/Tabs/Ranked";
 import Profile from "../screens/Tabs/Profile";
 import NavIcon from "../components/NavIcon";
 import NavIcon2 from "../components/NavIcon2";
 import { stackStyles } from "./config";
-import News from "../screens/Tabs/News";
 import stackFactory from "./stackFactory";
+import NavIcon3 from "../components/NavIcon3";
+
 
 const TabNavigation = createBottomTabNavigator();
 
@@ -40,9 +42,10 @@ export default () => {
         component={stackFactory}
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavIcon
+            <NavIcon3
               focused={focused}
-              name={Platform.OS === "ios" ? "ios-search" : "md-search"}
+              name={"naver"}
+              size={30}
             />
           ),
         }}
@@ -52,19 +55,20 @@ export default () => {
         }}
       />
       <TabNavigation.Screen
-        name="News"
+        name="DaumNews"
         component={stackFactory}
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavIcon2
+            <NavIcon3
               focused={focused}
-              name={Platform.OS === "ios" ? "news" : "news"}
+              name={"daum"}
+              size={26}
             />
           ),
         }}
         initialParams={{
-          name: "News",
-          InitialRoute: News,
+          name: "DaumNews",
+          InitialRoute: DaumNews,
         }}
       />
       <TabNavigation.Screen
@@ -87,7 +91,7 @@ export default () => {
       />
       <TabNavigation.Screen
         name="Profile"
-        component={Profile}
+        component={stackFactory}
         options={{
           tabBarIcon: ({ focused }) => (
             <NavIcon

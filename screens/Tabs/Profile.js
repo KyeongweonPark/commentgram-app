@@ -17,28 +17,15 @@ export const ME = gql`
       postsCount
       commentsCount
       reportersCount
+      reportingCount
       fullName
-      posts
-      {
-        id
-        description
-        CommentCount
-        UpCount
-        DownCount
-        newsurl{
-          id
-          title
-          newsurl
-          imgurl
-        }
-      }
       createdAt
+      isSelf
     }
   }
 `;
 
 const View = styled.View`
-  padding-top: 30px;
   justify-content: center;
   align-items: center;
   flex: 1;
@@ -48,13 +35,16 @@ const View = styled.View`
 const Text = styled.Text``;
 
 export default ({ route, navigation }) => {
-  const { data, loading } = useQuery(ME);
+  const { data, loading } = useQuery(ME, {
+    fetchPolicy: "network-only",
+  });
+  navigation.setOptions({
+    title: "내 계정",
+  });
+
   return (
     <View>
-    <ScrollView style={{ backgroundColor: styles.whiteColor, paddingTop: 100,}} contentContainerStyle={{alignSelf:"flex-start"}}>
       {loading ? <Loader /> : data && data.me && <UserProfile {...data.me} />}
-      
-    </ScrollView>
     </View>
   );
 };

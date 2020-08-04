@@ -22,33 +22,22 @@ export const CRAWLNEWS = gql`
 `;
 
 export default ({ route, navigation }) => {
+  const [key, setKey] = useState(0);
   let { newsurl, title, imgurl } = route.params;
-  let original_newsurl = newsurl;
+  const NEWSURL = newsurl;
   const [currentUrl, setCurrentUrl] = useState(newsurl);
   const webviewRef = useRef(null);
 
-  const { data, loading, refetch } = useQuery(CRAWLNEWS, {
-    variables: { newsurl: currentUrl },
-    fetchPolicy: "network-only",
-  });
-  if (data && data.crawlNews) {
-    newsurl = data.crawlNews[0].newsurl;
-    title = data.crawlNews[0].title;
-    imgurl = data.crawlNews[0].imgurl;
-    console.log(newsurl, title, imgurl);
-
-  }
-  navigation.setOptions({
-    headerRight: () => UrlLink({ newsurl, title, imgurl }),
-  });
-
   return (
     <WebView
-      source={{ uri: original_newsurl }}
+      key={key}
+      source={{ uri: NEWSURL }}
       ref={webviewRef}
       onNavigationStateChange={(navState) => {
         // setCurrentTitle(navState.title);
-        setCurrentUrl(navState.url);
+        // setCurrentUrl(original_newsurl);
+        // homeButtonHandler();
+        setCurrentUrl(NEWSURL);
       }}
       onLoadEnd={null}
     />

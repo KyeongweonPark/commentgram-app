@@ -10,6 +10,9 @@ import PostList from "./PostList";
 import useInput from "../hooks/useInput";
 import PostInput from "./PostInput";
 import PostButton from "./PostButton";
+import moment from 'moment';
+import 'moment/locale/ko';
+
 
 const View = styled.View`
   justify-content: center;
@@ -25,6 +28,7 @@ export const SEENEWS = gql`
       newsurl
       title
       PostCount
+      createdAt
       posts {
         id
         description
@@ -57,7 +61,7 @@ const Bold = styled.Text`
   font-weight: 500;
 `;
 
-const Location = styled.Text`
+const Time = styled.Text`
   font-size: 12px;
   color: grey;
 `;
@@ -65,18 +69,18 @@ const Location = styled.Text`
 const Text = styled.Text``;
 
 const NewsThumbnailContainer = styled.View`
-  padding-left: 20px;
+  flex: 1;
 `;
 
 const NewsContainer = styled.View`
-  width: 95%;
+  flex: 5;
   flex-wrap: wrap;
-  padding-left: 10px;
 `;
 
 const HeaderContainer = styled.View`
   flex-direction: row;
   padding: 20px;
+  display: flex;
 `;
 
 const PostStatus = styled.View`
@@ -161,7 +165,9 @@ export default ({ id, newsurl, imgurl, title }) => {
             <Bold>
               <Text>{title}</Text>
             </Bold>
-            <Location>{newsurl}</Location>
+            <Time>
+              {data && data.seeNews && moment(data.seeNews.createdAt).calendar()}
+            </Time>
           </Touchable>
         </NewsContainer>
       </HeaderContainer>

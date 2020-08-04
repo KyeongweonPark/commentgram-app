@@ -9,12 +9,8 @@ import constants from "../constants";
 import styles from "../styles";
 import { useMutation } from "react-apollo-hooks";
 import NavIcon from "./NavIcon";
-
-export const TOGGLE_LIKE = gql`
-  mutation toggleLike($postId: String!) {
-    toggleLike(postId: $postId)
-  }
-`;
+import moment from 'moment';
+import 'moment/locale/ko';
 
 const Container = styled.View`
   width: 100%;
@@ -49,16 +45,12 @@ const Bold = styled.Text`
 `;
 const Location = styled.Text`
   font-size: 12px;
+  color: grey;
 `;
 
 const InfoContainer = styled.View`
   padding: 10px;
 `;
-
-{
-  /* <Image resizeMode={"contain"} source={require("../../assets/logo.png")} /> */
-}
-
 
 const NewsList = ({
   id,
@@ -66,6 +58,7 @@ const NewsList = ({
   imgurl = "",
   newsurl = "http://daum.net",
   PostCount = -1,
+  createdAt,
 }) => {
   const navigation = useNavigation();
 
@@ -100,7 +93,7 @@ const NewsList = ({
             <Bold>
               <Text>{title}</Text>
             </Bold>
-            <Location>{newsurl}</Location>
+            <Location>{moment(createdAt).calendar()}</Location>
           </TouchableTitle>
         </HeaderUserContainer>
         <HeaderPostContainer>
@@ -115,15 +108,7 @@ const NewsList = ({
         </HeaderPostContainer>
       </Header>
       <InfoContainer>
-        {/* <Touchable>
-          <Bold>{likeCount === 1 ? "1 like" : `${likeCount} likes `}</Bold>
-        </Touchable>
-        <Caption>
-          <Bold>{user.username}</Bold> {caption}
-        </Caption> */}
-        {/* <Touchable>
-          <CommentCount>See all {comments.length} comments</CommentCount>
-        </Touchable> */}
+
       </InfoContainer>
     </Container>
   );

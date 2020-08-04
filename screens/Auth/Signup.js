@@ -91,6 +91,7 @@ export default ({ route, navigation }) => {
         setLoading(false);
       } else {
         // type === 'cancel'
+        setLoading(false);
       }
     } catch ({ message }) {
       alert(`Facebook Login Error: ${message}`);

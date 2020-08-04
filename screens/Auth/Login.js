@@ -7,11 +7,30 @@ import useInput from "../../hooks/useInput";
 import { Alert } from "react-native";
 import { useMutation } from "react-apollo-hooks";
 import { LOG_IN } from "./AuthQueries";
+import * as Animatable from 'react-native-animatable';
+import { AntDesign } from "@expo/vector-icons";
+import styles from "../../styles";
 
 const View = styled.View`
   justify-content: center;
   align-items: center;
   flex: 1;
+`;
+
+const TitleText = styled.Text`
+  color:${props=>props.theme.blackColor};
+  font-family: Snell Roundhand;
+  font-size:40px;
+  font-weight:600;
+`;
+
+
+const Container = styled.View`
+  margin-bottom: 50px;
+`;
+
+const ContainerBottom = styled.View`
+  margin-bottom: 150px;
 `;
 
 export default ({ route, navigation }) => {
@@ -38,10 +57,10 @@ export default ({ route, navigation }) => {
         data: { requestSecret },
       } = await requestSecretMutation();
       if (requestSecret) {
-        Alert.alert("Check the secret code in your email");
+        Alert.alert("메일함에서 인증 코드를 확인하세요.");
         navigation.navigate("Confirm", {email: value});
       } else {
-        Alert.alert("Account not found");
+        Alert.alert("계정을 찾을 수 없습니다.");
         navigation.navigate("Signup" ,{email:value});
       }
     } catch (e) {
@@ -54,6 +73,18 @@ export default ({ route, navigation }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View>
+      <Container>
+      <TitleText>Commentagram</TitleText>
+    </Container>
+    <Container>
+      <Animatable.View
+        animation="pulse"
+        easing="ease-out"
+        iterationCount="infinite"
+      >
+         <AntDesign size={80} color={styles.blackColor} name={"message1"} />
+      </Animatable.View>
+    </Container>
         <AuthInput
           {...emailInput}
           placeholder="Email"
@@ -63,6 +94,7 @@ export default ({ route, navigation }) => {
           autoCorrect={false}
         />
         <AuthButton loading={loading} onPress={handleLogin} text="로그인" />
+        <ContainerBottom></ContainerBottom>
       </View>
     </TouchableWithoutFeedback>
   );

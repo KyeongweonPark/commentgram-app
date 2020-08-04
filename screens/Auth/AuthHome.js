@@ -3,17 +3,34 @@ import styled from "styled-components";
 import { TouchableOpacity } from "react-native";
 import constants from "../../constants";
 import AuthButton from "../../components/AuthButton";
+import * as Animatable from 'react-native-animatable';
+import { AntDesign } from "@expo/vector-icons";
+import styles from "../../styles";
 
 const View = styled.View`
+  display:flex;
   justify-content: center;
   align-items: center;
   flex: 1;
+
 `;
 
-const Image = styled.Image`
-  width: ${constants.width / 2.5}px;
-  margin-bottom: 20px;
+const TitleText = styled.Text`
+  color:${props=>props.theme.blackColor};
+  font-family: Snell Roundhand;
+  font-size:40px;
+  font-weight:600;
 `;
+
+
+const Container = styled.View`
+  margin-bottom: 50px;
+`;
+
+const ContainerBottom = styled.View`
+  margin-bottom: 150px;
+`;
+
 
 const Touchable = styled.TouchableOpacity``;
 
@@ -27,12 +44,24 @@ const LoginLinkText = styled.Text`
 
 export default ({ navigation }) => (
   <View>
-    <Image resizeMode={"contain"} source={require("../../assets/logo.png")} />
+    <Container>
+      <TitleText>Commentagram</TitleText>
+    </Container>
+    <Container>
+      <Animatable.View
+        animation="pulse"
+        easing="ease-out"
+        iterationCount="infinite"
+      >
+         <AntDesign size={80} color={styles.blackColor} name={"message1"} />
+      </Animatable.View>
+    </Container>
     <AuthButton text={"새로운 계정 만들기"} onPress={() => navigation.navigate("Signup")} />
     <Touchable onPress={()=>navigation.navigate("Login")}>
       <LoginLink>
         <LoginLinkText>로그인</LoginLinkText>
       </LoginLink>
     </Touchable>
+    <ContainerBottom></ContainerBottom>
   </View>
 );
