@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import UrlLink from "../../components/UrlLink";
 import { gql } from "apollo-boost";
-import { useQuery } from "react-apollo-hooks";
+import { useLazyQuery } from "@apollo/react-hooks";
 import { AntDesign } from "@expo/vector-icons";
 import styles from "../../styles";
 
@@ -40,16 +40,15 @@ const HeaderLeftContainer = styled.View`
   justify-content: flex-end;
 `;
 
+let currentUrl2 = NEWSURL;
+
 export default ({ navigation }) => {
   const [currentUrl, setCurrentUrl] = useState(NEWSURL);
-  const [currentTitle, setCurrentTitle] = useState("네이버 TV연예");
+  const [currentTitle, setCurrentTitle] = useState("");
   const [canGoBack, setCanGoBack] = useState(false);
   const [key, setKey] = useState(0);
   const webviewRef = useRef(null);
-  const { data, loading, refetch } = useQuery(CRAWLNEWSNAVER, {
-    variables: { newsurl: currentUrl },
-    fetchPolicy: "network-only",
-  });
+  const [getInfo, { loading, data }] = useLazyQuery(CRAWLNEWSNAVER);
   let { newsurl, title } = { currentUrl, currentTitle };
   let imgurl = "";
 
@@ -72,18 +71,8 @@ export default ({ navigation }) => {
   };
 
   navigation.setOptions({
-    title:
-      currentTitle.length > 15
-        ? currentTitle.slice(0, 15) + "..."
-        : currentTitle,
     headerLeft: () => (
       <HeaderLeftContainer>
-        {currentUrl == NEWSURL ||
-        currentUrl == "https://entertain.naver.com/home" ? null : (
-          <TouchableOpacityButton onPress={backButtonHandler}>
-            <AntDesign size={25} color={styles.blackColor} name={"left"} />
-          </TouchableOpacityButton>
-        )}
         <TouchableOpacityButton onPress={homeButtonHandler}>
           <AntDesign size={25} color={styles.blackColor} name={"home"} />
         </TouchableOpacityButton>
@@ -91,27 +80,67 @@ export default ({ navigation }) => {
     ),
   });
 
-  navigation.setOptions({
-    headerRight: () =>
-      imgurl == "" ? (
-        <IconView>
-          <AntDesign size={30} color={styles.darkGreyColor} name={"message1"} />
-        </IconView>
-      ) : newsurl.slice(0, 25) == "https://n.news.naver.com/" ? (
-        UrlLink({ newsurl, title, imgurl })
-      ) : (
-        <IconView>
-          <AntDesign size={30} color={styles.darkGreyColor} name={"message1"} />
-        </IconView>
-      ),
-  });
 
-  if (data && data.crawlNewsNaver) {
-    newsurl = data.crawlNewsNaver[0].newsurl;
-    title = data.crawlNewsNaver[0].title;
-    imgurl = data.crawlNewsNaver[0].imgurl;
-    // console.log(newsurl, title, imgurl);
-  }
+  const updateState = async (navState) => {
+    // setCurrentTitle(navState.title);
+    //   setCurrentUrl(navState.url);
+    // setCanGoBack(navState.canGoBack);
+    //  changeState(navState);
+
+    // console.log("changed url:", navState.url);
+
+    await getInfo({
+      variables: { newsurl: navState.url },
+      fetchPolicy: "network-only",
+    });
+
+    if (data && data.crawlNewsNaver) {
+      newsurl = data.crawlNewsNaver[0].newsurl;
+      title = data.crawlNewsNaver[0].title;
+      imgurl = data.crawlNewsNaver[0].imgurl;
+      // console.log("result", newsurl, title, imgurl);
+    }
+
+    navigation.setOptions({
+      title:
+        navState.title.length > 15
+          ? navState.title.slice(0, 15) + "..."
+          : navState.title,
+      headerLeft: () => (
+        <HeaderLeftContainer>
+          {navState.url == NEWSURL ||
+          navState.url == "https://entertain.naver.com/home" ? null : (
+            <TouchableOpacityButton onPress={backButtonHandler}>
+              <AntDesign size={25} color={styles.blackColor} name={"left"} />
+            </TouchableOpacityButton>
+          )}
+          <TouchableOpacityButton onPress={homeButtonHandler}>
+            <AntDesign size={25} color={styles.blackColor} name={"home"} />
+          </TouchableOpacityButton>
+        </HeaderLeftContainer>
+      ),
+      headerRight: () =>
+        imgurl == "" ? (
+          <IconView>
+            <AntDesign
+              size={30}
+              color={styles.darkGreyColor}
+              name={"message1"}
+            />
+          </IconView>
+        ) : newsurl.slice(0, 25) == "https://n.news.naver.com/" ? (
+          UrlLink({ newsurl, title, imgurl })
+        ) : (
+          <IconView>
+            <AntDesign
+              size={30}
+              color={styles.darkGreyColor}
+              name={"message1"}
+            />
+          </IconView>
+        ),
+    });
+  };
 
   return (
     <View>
@@ -120,11 +149,10 @@ export default ({ navigation }) => {
         ref={webviewRef}
         source={{ uri: NEWSURL }}
         onNavigationStateChange={(navState) => {
-          setCurrentTitle(navState.title);
-          setCurrentUrl(navState.url);
-          setCanGoBack(navState.canGoBack);
-          // navigation.navigate("Webpage", { newsurl:navState.url });
+          updateState(navState);
         }}
+        // navigation.navigate("Webpage", { newsurl:navState.url });
+
         onLoadEnd={null}
       />
     </View>

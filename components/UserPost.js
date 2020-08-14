@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigation } from "@react-navigation/native";
 import MyPostNewsClip from "./MyPostNewsClip";
@@ -13,12 +13,19 @@ import useInput from "../hooks/useInput";
 import { gql } from "apollo-boost";
 import { useMutation } from "react-apollo-hooks";
 import moment from "moment";
-import "moment/locale/ko";
+import "moment/min/locales";
+import { useLazyQuery } from "@apollo/react-hooks";
 
 export const ADD_COMMENT = gql`
   mutation addComment($postId: String!, $text: String!) {
     addComment(postId: $postId, text: $text) {
       id
+        text
+        user {
+          id
+          username
+        }
+        createdAt
     }
   }
 `;
@@ -52,7 +59,8 @@ const NewsMessageContainer = styled.View`
 
 const HeaderContainer = styled.View`
   flex-direction: row;
-  padding: 20px;
+  width: ${constants.width / 1.1}px;
+  padding: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
   display: flex;
@@ -188,20 +196,17 @@ const CommentButtonContainer = styled.View`
   align-self: flex-end;
 `;
 
+
+
 export default ({
   id,
-  user,
   newsurl,
   description,
   comments,
-  postreports,
-  isUp,
-  isDown,
   UpCount,
   DownCount,
   CommentCount,
   createdAt,
-  updatedAt,
   PostReportCount,
   refetch,
 }) => {
@@ -212,14 +217,27 @@ export default ({
   const newscreatedAt = newsurl.createdAt;
   const postcount = newsurl.postcount;
   // const username = user.username;
-
+  moment.locale("ko");
   const [comment, setComment] = useState(false);
+  const [selfComments, setSelfComments] = useState([]);
+  const [commentCountS, setCommentCount] = useState(CommentCount);
+
   const toggleComment = async () => {
+    if (comment == false) {
+      // await getComments();
+      setSelfComments([]);
+      refetch();
+    }
     setComment((Flag) => !Flag);
   };
 
   const commentInput = useInput("");
   const [commentloading, setCommentloading] = useState(false);
+
+  // const [getComments, { loading, data }] = useLazyQuery(SEEPOSTCOMMENTS, {
+  //   variables: { postId: id },
+  // });
+
   const [addCommentMutation] = useMutation(ADD_COMMENT, {
     variables: { text: commentInput.value, postId: id },
   });
@@ -233,8 +251,12 @@ export default ({
 
     try {
       setCommentloading(true);
-      await addCommentMutation();
-      await refetch({ variables: { postId: id } });
+      const {
+        data: { addComment },
+      } = await addCommentMutation();
+      setSelfComments([...selfComments, addComment]);
+      setCommentCount((l) => l + 1);
+      // await refetch();
       commentInput.setValue("");
     } catch (e) {
       console.log(e);
@@ -302,18 +324,27 @@ export default ({
 
       <PostContainer>
         <PostHeader>
-          <PostBold>
-            <PostTimeStamp>{moment(createdAt).fromNow()}</PostTimeStamp>
-            {" " + description}
-          </PostBold>
+          {PostReportCount < 100 ? (
+            <PostBold>
+              <PostTimeStamp>{moment(createdAt).fromNow()}</PostTimeStamp>
+              {" " + description}
+            </PostBold>
+          ) : (
+            <PostBold>
+              <PostTimeStamp>{moment(createdAt).fromNow()}</PostTimeStamp>
+              <PostTimeStamp>
+                {" " + "네티즌의 신고로 블라인드 처리되었습니다."}
+              </PostTimeStamp>
+            </PostBold>
+          )}
         </PostHeader>
         <PostStatusContainer>
           <PostStatusComment>
             <PostStatusCommentTouchable onPress={toggleComment}>
-              {CommentCount == 0 ? (
+              {commentCountS == 0 ? (
                 <PostStatusText>답글작성</PostStatusText>
               ) : (
-                <PostStatusText>답글: {CommentCount}</PostStatusText>
+                <PostStatusText>답글: {commentCountS}</PostStatusText>
               )}
             </PostStatusCommentTouchable>
           </PostStatusComment>
@@ -346,11 +377,15 @@ export default ({
                 <CommentList key={comment.id} {...comment} />
                 // <Text key={comment.id}>{comment.text}</Text>
               ))}
+              {comment &&
+              selfComments.map((comment) => (
+                <CommentList key={comment.id} {...comment} />
+              ))}
           </CommentTextContainer>
           {comment && (
             <AddCommentContainer>
               <CommentInput
-                {...commentInput}
+                {...commentInput} onSubmitEditing={handleNewComment}
                 placeholder="의견을 입력해 주세요."
               />
               <CommentButtonContainer>

@@ -50,11 +50,12 @@ const FilterContainer = styled.View`
 const FilterButton = styled.TouchableOpacity`
   flex: 1;
 `;
-const FilterButtonWeek = styled.TouchableOpacity`
-  flex: 1;
-`;
-const FilterButtonMonth = styled.TouchableOpacity`
-  flex: 1;
+
+const TextGray = styled.Text`
+  margin-top: 100px;
+  text-align: center;
+  font-size: 30px;
+  color: gray;
 `;
 
 export default ({ navigation }) => {
@@ -126,11 +127,11 @@ export default ({ navigation }) => {
       >
         {loading ? (
           <Loader />
-        ) : (
-          data &&
+        ) : (data.seeNewsesRank && data.seeNewsesRank.length > 0 ?
+          (data &&
           data.seeNewsesRank &&
-          data.seeNewsesRank.map((news) => <NewsList key={news.id} {...news} />)
-        )}
+          data.seeNewsesRank.map((news) => <NewsList key={news.id} {...news} />)) : <TextGray>결과 없음</TextGray>)
+        }
       </ScrollView>
     </View>
   );

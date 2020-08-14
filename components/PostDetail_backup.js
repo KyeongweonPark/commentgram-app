@@ -13,7 +13,6 @@ import PostButton from "./PostButton";
 import moment from "moment";
 import "moment/min/locales";
 import { FlatList } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const ContainerView = styled.View`
   justify-content: flex-start;
@@ -23,31 +22,25 @@ const ContainerView = styled.View`
 export const SEEPOSTBYNEWS = gql`
   query seePostsbyNews(
     $newsId: String!
-    $orderBy: String!
-    $limit: Int!
     $offset: Int!
+    $limit: Int!
+    $orderBy: String!
   ) {
     seePostsbyNews(
       newsId: $newsId
-      orderBy: $orderBy
-      limit: $limit
       offset: $offset
+      limit: $limit
+      orderBy: $orderBy
     ) {
       id
       description
+      CommentCount
       user {
         id
         username
       }
-      comments {
-        id
-        text
-        user {
-          id
-          username
-        }
-        createdAt
-      }
+      UpCount
+      DownCount
       isUp
       isDown
       isPostReport
@@ -159,9 +152,6 @@ export default ({
   const postInput = useInput("");
   const [postloading, setPostloading] = useState(false);
   const [filter, setFilter] = useState("priority_DESC");
-  const [loading, setLoading] = useState(false);
-  const [postCountS, setPostCount] = useState(PostCount);
-  // const [limit, setLimit] = useState(10);
 
   const {
     data: data2,
@@ -169,7 +159,7 @@ export default ({
     refetch: refetch2,
     fetchMore,
   } = useQuery(SEEPOSTBYNEWS, {
-    variables: { newsId: id, limit: 10, offset: 0, orderBy: filter },
+    variables: { newsId: id, offset: 0, limit: 10, orderBy: filter },
     fetchPolicy: "network-only",
   });
 
@@ -178,16 +168,12 @@ export default ({
   });
 
   const onLoadMore = async () => {
-    setLoading(true);
     await fetchMore({
       variables: {
         offset: data2.seePostsbyNews.length,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) {
-          setFullList(true);
-          return prev;
-        }
+        if (!fetchMoreResult) return prev;
         return Object.assign({}, prev, {
           seePostsbyNews: [
             ...prev.seePostsbyNews,
@@ -196,7 +182,6 @@ export default ({
         });
       },
     });
-    setLoading(false);
   };
 
   const handleNewPost = async () => {
@@ -209,8 +194,7 @@ export default ({
     try {
       setPostloading(true);
       await addPostMutation();
-      await refetch2();
-      setPostCount((p)=> p+1);
+      await refetch();
       // await refetch2();
 
       // await refetch2({
@@ -246,6 +230,9 @@ export default ({
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
         }
+        onMomentumScrollEnd={() => {
+          onLoadMore();
+        }}
         style={{ backgroundColor: styles.whiteColor, paddingBottom: 200 }}
       >
         <ContainerView>
@@ -282,9 +269,9 @@ export default ({
             </NewsContainer>
           </HeaderContainer>
           <PostStatus>
-            <Text>총 댓글수 : {postCountS}</Text>
+            <Text>총 댓글수 : {PostCount}</Text>
           </PostStatus>
-          <PostInput {...postInput} onSubmitEditing={handleNewPost} placeholder="의견을 입력해 주세요." />
+          <PostInput {...postInput} placeholder="의견을 입력해 주세요." />
           <AddPostContainer>
             <PostButton
               loading={postloading}
@@ -317,41 +304,19 @@ export default ({
           </FilterContainer>
           <PostContainer>
             <PostItems>
-              {data2 &&
+              {
+                data2 &&
                 data2.seePostsbyNews &&
                 data2.seePostsbyNews.map((item, index) => (
-                  <PostList
-                    key={index}
-                    id={item.id}
-                    refetch2={refetch2}
-                    createdAt={item.createdAt}
-                    description={item.description}
-                    user={item.user}
-                    comments={item.comments}
-                    UpCount={item.UpCount}
-                    DownCount={item.DownCount}
-                    isUp={item.isUp}
-                    isDown={item.isDown}
-                    isPostReport={item.isPostReport}
-                    UpCount={item.UpCount}
-                    DownCount={item.DownCount}
-                    CommentCount={item.CommentCount}
-                    PostReportCount={item.PostReportCount}
-                    createdAt={item.createdAt}
-                  />
-                ))}
+                  <PostList key={index} id={item.id} refetch2={refetch2}
+                  createdAt={item.createdAt}
+                  description={item.description}
+                  user={item.user} />
+                ))
+              }
             </PostItems>
           </PostContainer>
-          {loading2 ? <Loader /> : null}
-          {data2 &&
-            data2.seePostsbyNews &&
-            (loading ? (
-              <Loader />
-            ) : (postCountS==data2.seePostsbyNews.length) ? null : (
-              <TouchableOpacity onPress={onLoadMore}>
-                <BoldText>더 보기</BoldText>
-              </TouchableOpacity>
-            ))}
+
           <BlankContainer></BlankContainer>
         </ContainerView>
       </ScrollView>

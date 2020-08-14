@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import UrlLink from "../../components/UrlLink";
 import { gql } from "apollo-boost";
-import { useQuery } from "react-apollo-hooks";
+import { useLazyQuery } from "@apollo/react-hooks";
 import { AntDesign } from "@expo/vector-icons";
 import styles from "../../styles";
 
@@ -42,14 +42,11 @@ const HeaderLeftContainer = styled.View`
 
 export default ({ navigation }) => {
   const [currentUrl, setCurrentUrl] = useState(NEWSURL);
-  const [currentTitle, setCurrentTitle] = useState("네이버 TV연예");
+  const [currentTitle, setCurrentTitle] = useState("");
   const [canGoBack, setCanGoBack] = useState(false);
   const [key, setKey] = useState(0);
   const webviewRef = useRef(null);
-  const { data, loading, refetch } = useQuery(CRAWLNEWSDAUM, {
-    variables: { newsurl: currentUrl },
-    fetchPolicy: "network-only",
-  });
+  const [getInfo, { loading, data }] = useLazyQuery(CRAWLNEWSDAUM);
   let { newsurl, title } = { currentUrl, currentTitle };
   let imgurl = "";
 
@@ -72,18 +69,8 @@ export default ({ navigation }) => {
   };
 
   navigation.setOptions({
-    title:
-      currentTitle.length > 15
-        ? currentTitle.slice(0, 15) + "..."
-        : currentTitle,
     headerLeft: () => (
       <HeaderLeftContainer>
-        {currentUrl == NEWSURL ||
-        currentUrl == "https://entertain.daum.net" ? null : (
-          <TouchableOpacityButton onPress={backButtonHandler}>
-            <AntDesign size={25} color={styles.blackColor} name={"left"} />
-          </TouchableOpacityButton>
-        )}
         <TouchableOpacityButton onPress={homeButtonHandler}>
           <AntDesign size={25} color={styles.blackColor} name={"home"} />
         </TouchableOpacityButton>
@@ -91,28 +78,60 @@ export default ({ navigation }) => {
     ),
   });
 
-  navigation.setOptions({
-    headerRight: () =>
-      imgurl == "" ? (
-        <IconView>
-          <AntDesign size={30} color={styles.darkGreyColor} name={"message1"} />
-        </IconView>
-      ) : newsurl.slice(0, 31) == "https://entertain.v.daum.net/v/" ||
-        newsurl.slice(0, 26) == "https://news.v.daum.net/v/" ? (
-        UrlLink({ newsurl, title, imgurl })
-      ) : (
-        <IconView>
-          <AntDesign size={30} color={styles.darkGreyColor} name={"message1"} />
-        </IconView>
-      ),
-  });
+  const updateState = async (navState) => {
+    await getInfo({
+      variables: { newsurl: navState.url },
+      fetchPolicy: "network-only",
+    });
 
-  if (data && data.crawlNewsDaum) {
-    newsurl = data.crawlNewsDaum[0].newsurl;
-    title = data.crawlNewsDaum[0].title;
-    imgurl = data.crawlNewsDaum[0].imgurl;
-    // console.log(newsurl, title, imgurl);
-  }
+    if (data && data.crawlNewsDaum) {
+      newsurl = data.crawlNewsDaum[0].newsurl;
+      title = data.crawlNewsDaum[0].title;
+      imgurl = data.crawlNewsDaum[0].imgurl;
+      // console.log(newsurl, title, imgurl);
+    }
+
+    navigation.setOptions({
+      title:
+        navState.title.length > 15
+          ? navState.title.slice(0, 15) + "..."
+          : navState.title,
+      headerLeft: () => (
+        <HeaderLeftContainer>
+          {navState.url == NEWSURL ||
+          navState.url  == "https://entertain.daum.net" ? null : (
+            <TouchableOpacityButton onPress={backButtonHandler}>
+              <AntDesign size={25} color={styles.blackColor} name={"left"} />
+            </TouchableOpacityButton>
+          )}
+          <TouchableOpacityButton onPress={homeButtonHandler}>
+            <AntDesign size={25} color={styles.blackColor} name={"home"} />
+          </TouchableOpacityButton>
+        </HeaderLeftContainer>
+      ),
+      headerRight: () =>
+        imgurl == "" ? (
+          <IconView>
+            <AntDesign
+              size={30}
+              color={styles.darkGreyColor}
+              name={"message1"}
+            />
+          </IconView>
+        ) : newsurl.slice(0, 31) == "https://entertain.v.daum.net/v/" ||
+          newsurl.slice(0, 26) == "https://news.v.daum.net/v/" ? (
+          UrlLink({ newsurl, title, imgurl })
+        ) : (
+          <IconView>
+            <AntDesign
+              size={30}
+              color={styles.darkGreyColor}
+              name={"message1"}
+            />
+          </IconView>
+        ),
+    });
+  };
 
   return (
     <View>
@@ -121,10 +140,7 @@ export default ({ navigation }) => {
         ref={webviewRef}
         source={{ uri: NEWSURL }}
         onNavigationStateChange={(navState) => {
-          setCurrentTitle(navState.title);
-          setCurrentUrl(navState.url);
-          setCanGoBack(navState.canGoBack);
-          // navigation.navigate("Webpage", { newsurl:navState.url });
+          updateState(navState);
         }}
         onLoadEnd={null}
       />

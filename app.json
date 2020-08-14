@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "commentgram-app",
+    "name": "코멘타그램",
     "slug": "commentgram-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,10 +17,17 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.papercompany.commentagram",
+      "buildNumber": "1.0.0"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "android": {
+      "package": "com.papercompany.commentagram",
+      "versionCode": 1
+    },
+    "description": ""
   }
 }

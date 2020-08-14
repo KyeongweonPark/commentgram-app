@@ -13,9 +13,6 @@ export const SEEPOSTBYUSER = gql`
     seePostsbyUser(userId: $userId, offset: $offset, limit: $limit) {
       id
       description
-      CommentCount
-      UpCount
-      DownCount
       newsurl {
         id
         title
@@ -70,6 +67,7 @@ const View = styled.View`
 const UserPostView = styled.View`
   display: flex;
   flex-wrap: wrap;
+  padding: 5px;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
@@ -84,7 +82,7 @@ const ProfileHeader = styled.View`
 const HeaderColumn = styled.View``;
 const HeaderContainer = styled.View`
   display: flex;
-  margin-left: 20px;
+  margin-left: 10px;
   flex-direction: row;
   align-items: center;
 `;
@@ -131,10 +129,11 @@ const ProfileStats = styled.View`
   align-self: center;
   flex-direction: row;
   margin-top: 30px;
-  width: ${constants.width}px;
+  width: ${constants.width/1.2}px;
   display: flex;
-  justify-content: space-around;
-  padding-right: 20px;
+  justify-content: space-between;
+  
+  text-align: center;
 `;
 
 const Stat = styled.View`
@@ -164,6 +163,7 @@ export default ({
   fullName,
   isSelf = false,
   isReporting = false,
+  refetchme = null,
 }) => {
   const { data, loading, refetch, fetchMore } = useQuery(SEEPOSTBYUSER, {
     variables: {
@@ -204,7 +204,9 @@ export default ({
   const refresh = async () => {
     try {
       setRefreshing(true);
+      await refetchme();
       await refetch();
+
     } catch (e) {
       console.log(e);
     } finally {
@@ -245,64 +247,6 @@ export default ({
 
   return (
     <View>
-      {data && data.seePostsbyUser && (
-        <ProfileHeader>
-          <HeaderColumn>
-            <HeaderContainer>
-              {isSelf ? (
-                <HeaderDetail>
-                  <Bold>계정: {email}</Bold>
-                  <Bold>사용자명: {fullName}</Bold>
-                  <Bold>필명: {username}</Bold>
-                </HeaderDetail>
-              ) : (
-                <HeaderDetail>
-                  <Bold>필명: {username}</Bold>
-                </HeaderDetail>
-              )}
-
-              {isSelf ? (
-                <ButtonContainer onPress={handleLogout}>
-                  <LogoutButton>
-                    <Text>로그아웃</Text>
-                  </LogoutButton>
-                </ButtonContainer>
-              ) : isReportingS ? (
-                <ReportButtonContainer>
-                  <ReportButton>
-                    <Text>신고 중</Text>
-                  </ReportButton>
-                </ReportButtonContainer>
-              ) : (
-                <ButtonContainer onPress={handleReport}>
-                  <ReportButton>
-                    <Text>신고하기</Text>
-                  </ReportButton>
-                </ButtonContainer>
-              )}
-            </HeaderContainer>
-
-            <ProfileStats>
-              <Stat>
-                <Bold>{postsCount}</Bold>
-                <StatName>댓글</StatName>
-              </Stat>
-              <Stat>
-                <Bold>{commentsCount}</Bold>
-                <StatName>대댓글</StatName>
-              </Stat>
-              <Stat>
-                <Bold>{reportersCountS}</Bold>
-                <StatName>신고 당함</StatName>
-              </Stat>
-              <Stat>
-                <Bold>{reportingCount}</Bold>
-                <StatName>신고 중</StatName>
-              </Stat>
-            </ProfileStats>
-          </HeaderColumn>
-        </ProfileHeader>
-      )}
       <ScrollView
         style={{ backgroundColor: styles.whiteColor }}
         contentContainerStyle={{ alignSelf: "flex-start" }}
@@ -313,6 +257,65 @@ export default ({
           onLoadMore();
         }}
       >
+        {data && data.seePostsbyUser && (
+          <ProfileHeader>
+            <HeaderColumn>
+              <HeaderContainer>
+                {isSelf ? (
+                  <HeaderDetail>
+                    <Bold>계정: {email}</Bold>
+                    <Bold>사용자명: {fullName}</Bold>
+                    <Bold>닉네임: {username}</Bold>
+                  </HeaderDetail>
+                ) : (
+                  <HeaderDetail>
+                    <Bold>닉네임: {username}</Bold>
+                  </HeaderDetail>
+                )}
+
+                {isSelf ? (
+                  <ButtonContainer onPress={handleLogout}>
+                    <LogoutButton>
+                      <Text>로그아웃</Text>
+                    </LogoutButton>
+                  </ButtonContainer>
+                ) : isReportingS ? (
+                  <ReportButtonContainer>
+                    <ReportButton>
+                      <Text>신고 중</Text>
+                    </ReportButton>
+                  </ReportButtonContainer>
+                ) : (
+                  <ButtonContainer onPress={handleReport}>
+                    <ReportButton>
+                      <Text>신고하기</Text>
+                    </ReportButton>
+                  </ButtonContainer>
+                )}
+              </HeaderContainer>
+
+              <ProfileStats>
+                <Stat>
+                  <Bold>{postsCount}</Bold>
+                  <StatName>댓글</StatName>
+                </Stat>
+                <Stat>
+                  <Bold>{commentsCount}</Bold>
+                  <StatName>대댓글</StatName>
+                </Stat>
+                <Stat>
+                  <Bold>{reportersCountS}</Bold>
+                  <StatName>신고 당함</StatName>
+                </Stat>
+                <Stat>
+                  <Bold>{reportingCount}</Bold>
+                  <StatName>신고 중</StatName>
+                </Stat>
+              </ProfileStats>
+            </HeaderColumn>
+          </ProfileHeader>
+        )}
+
         <UserPostView>
           {data &&
             data.seePostsbyUser &&

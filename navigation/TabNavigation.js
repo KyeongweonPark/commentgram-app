@@ -52,6 +52,7 @@ export default () => {
         initialParams={{
           name: "NaverNews",
           InitialRoute: NaverNews,
+          title: "",
         }}
       />
       <TabNavigation.Screen
@@ -69,6 +70,7 @@ export default () => {
         initialParams={{
           name: "DaumNews",
           InitialRoute: DaumNews,
+          title: "",
         }}
       />
       <TabNavigation.Screen

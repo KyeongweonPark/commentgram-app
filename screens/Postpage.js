@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { ScrollView, RefreshControl, Text, View } from "react-native";
+import { ScrollView, RefreshControl, Text } from "react-native";
 import { YellowBox } from "react-native";
 import { gql } from "apollo-boost";
 import Loader from "../components/Loader";
 import { useQuery, useMutation } from "react-apollo-hooks";
 import styles from "../styles";
 import PostDetail from "../components/PostDetail";
+import styled from "styled-components";
 
 YellowBox.ignoreWarnings(["Can't open url: about:srcdoc"]);
 
@@ -16,6 +17,8 @@ export const SEARCHBYURL = gql`
       title
       newsurl
       imgurl
+      createdAt
+      PostCount
     }
   }
 `;
@@ -39,6 +42,10 @@ export const ADDNEWS = gql`
       imgurl
     }
   }
+`;
+
+const View = styled.View`
+  /* background-color: white; */
 `;
 
 export default ({ route, navigation }) => {
@@ -80,7 +87,7 @@ export default ({ route, navigation }) => {
           data: { addNews },
         } = await addNewsMutation();
         // setCheckNews(true);
-      } 
+      }
     } catch (e) {
       setCheckNews(false);
     } finally {
@@ -93,25 +100,29 @@ export default ({ route, navigation }) => {
   }
 
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
-      }
-      style={{ backgroundColor: styles.whiteColor }}
-    >
-      <View>
-        {loading2 ? (
-          <Loader />
-        ) : loading == true ? (
-          <Loader />
-        ) : (
-          data &&
-          data.UrlSearchNews &&
-          data.UrlSearchNews.map((news) => (
-            <PostDetail key={news.id} {...news} />
-          ))
-        )}
-      </View>
-    </ScrollView>
+    <View>
+      {loading2 ? (
+        <Loader />
+      ) : loading == true ? (
+        <Loader />
+      ) : (
+        data &&
+        data.UrlSearchNews &&
+        data.UrlSearchNews.map((news) => (
+          <PostDetail
+            key={news.id}
+            id={news.id}
+            newsurl={news.newsurl}
+            imgurl={news.imgurl}
+            title={news.title}
+            PostCount={news.PostCount}
+            createdAt={news.createdAt}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
+            refetch={refetch}
+          />
+        ))
+      )}
+    </View>
   );
 };

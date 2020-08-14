@@ -15,13 +15,14 @@ YellowBox.ignoreWarnings([
 const stackFactory = createStackNavigator();
 
 export default ({ route, navigation }) => {
-  const { InitialRoute } = route.params;
+  const { InitialRoute, title } = route.params;
 
   return (
     <stackFactory.Navigator screenOptions={{ headerBackTitle: " " }}>
       <stackFactory.Screen
         name={route.name}
         component={InitialRoute}
+        options={{title: title}}
         // options={{ headerShown: false }}
       />
       <stackFactory.Screen

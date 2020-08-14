@@ -20,7 +20,6 @@ const View = styled.View`
 
 const TitleText = styled.Text`
   color: ${(props) => props.theme.blackColor};
-  font-family: Snell Roundhand;
   font-size: 40px;
   font-weight: 600;
 `;
@@ -80,9 +79,6 @@ export default ({ route, navigation }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View>
-        <Container>
-          <TitleText>Commentagram</TitleText>
-        </Container>
         <Container>
           <Animatable.View
             animation="pulse"

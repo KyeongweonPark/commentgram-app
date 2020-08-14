@@ -9,11 +9,11 @@ import { persistCache } from "apollo-cache-persist";
 import ApolloClient from "apollo-boost";
 import apolloClientOptions from "./apollo";
 import { ApolloProvider } from "react-apollo-hooks";
+import { ApolloProvider as ApolloHooks} from "@apollo/react-hooks";
 import { ThemeProvider } from "styled-components";
 import NavController from "./components/NavController";
 import { AuthProvider } from "./AuthContext";
 import styles from "./styles";
-
 
 
 export default function App() {
@@ -26,7 +26,7 @@ export default function App() {
       await Font.loadAsync({
         ...Ionicons.font,
       });
-      // await Asset.loadAsync([require("./assets/logo.png")]);
+      await Asset.loadAsync([require("./assets/mainlogo.png")]);
       const cache = new InMemoryCache();
       await persistCache({
         cache,
@@ -62,11 +62,13 @@ export default function App() {
   return loaded && client && isLoggedIn !== null ? (
     
     <ApolloProvider client={client}>
+      <ApolloHooks client={client}>
       <ThemeProvider theme={styles}>
         <AuthProvider isLoggedIn={isLoggedIn}>
           <NavController />
         </AuthProvider>
       </ThemeProvider>
+      </ApolloHooks>
     </ApolloProvider>
   ) : (
     <AppLoading />

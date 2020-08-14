@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
-import moment from 'moment';
-import 'moment/locale/ko';
+import moment from "moment";
+import "moment/min/locales";
 
 const CommentContainer = styled.View`
   padding-top: 10px;
@@ -25,10 +25,11 @@ const CommentCreatedAt = styled.Text`
 `;
 const CommentText = styled.Text``;
 
-export default ({ id, text, user = [], createdAt }) => {
+export default ({ id, text, user = [], createdAt, }) => {
   const userid = user.id;
   const navigation = useNavigation();
-  moment.locale('kr');
+  moment.locale('ko');
+  
   return (
     <CommentContainer>
       <CommentHeaderContainer>

@@ -9,8 +9,8 @@ import constants from "../constants";
 import styles from "../styles";
 import { useMutation } from "react-apollo-hooks";
 import NavIcon from "./NavIcon";
-import moment from 'moment';
-import 'moment/locale/ko';
+import moment from "moment";
+import "moment/min/locales";
 
 const Container = styled.View`
   width: 100%;
@@ -61,7 +61,7 @@ const NewsList = ({
   createdAt,
 }) => {
   const navigation = useNavigation();
-
+  moment.locale('ko');
   return (
     <Container>
       <Header>

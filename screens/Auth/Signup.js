@@ -9,11 +9,17 @@ import { useMutation } from "react-apollo-hooks";
 import { CREATE_ACCOUNT } from "./AuthQueries";
 import * as Facebook from "expo-facebook";
 import * as Google from "expo-google-app-auth";
+import * as Animatable from 'react-native-animatable';
+import { AntDesign } from "@expo/vector-icons";
+import styles from "../../styles";
 
 const View = styled.View`
   justify-content: center;
   align-items: center;
   flex: 1;
+`;
+const Container = styled.View`
+  margin-bottom: 10px;
 `;
 const FBContainer = styled.View`
   margin-top: 25px;
@@ -132,17 +138,19 @@ export default ({ route, navigation }) => {
   };
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+ 
       <View>
-      <AuthInput
-          {...lNameInput}
-          placeholder="성"
-          autoCapitalize="words"
-        />
-        <AuthInput
-          {...fNameInput}
-          placeholder="이름"
-          autoCorrect={false}
-        />
+      <Container>
+        <Animatable.View
+          animation="pulse"
+          easing="ease-out"
+          iterationCount="infinite"
+        >
+          <AntDesign size={80} color={styles.blackColor} name={"message1"} />
+        </Animatable.View>
+      </Container>
+        <AuthInput {...lNameInput} placeholder="성" autoCapitalize="words" />
+        <AuthInput {...fNameInput} placeholder="이름" autoCorrect={false} />
         <AuthInput
           {...emailInput}
           placeholder="Email"

@@ -35,7 +35,7 @@ const View = styled.View`
 const Text = styled.Text``;
 
 export default ({ route, navigation }) => {
-  const { data, loading } = useQuery(ME, {
+  const { data, loading, refetch } = useQuery(ME, {
     fetchPolicy: "network-only",
   });
   navigation.setOptions({
@@ -44,7 +44,7 @@ export default ({ route, navigation }) => {
 
   return (
     <View>
-      {loading ? <Loader /> : data && data.me && <UserProfile {...data.me} />}
+      {loading ? <Loader /> : data && data.me && <UserProfile {...data.me} refetchme={refetch} />}
     </View>
   );
 };

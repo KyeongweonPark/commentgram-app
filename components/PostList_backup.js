@@ -49,12 +49,6 @@ export const ADD_COMMENT = gql`
   mutation addComment($postId: String!, $text: String!) {
     addComment(postId: $postId, text: $text) {
       id
-        text
-        user {
-          id
-          username
-        }
-        createdAt
     }
   }
 `;
@@ -203,32 +197,15 @@ const CommentButtonContainer = styled.View`
   align-self: flex-end;
 `;
 
-export default ({
-  id,
-  description,
-  user,
-  comments,
-  isUp,
-  isDown,
-  isPostReport,
-  UpCount,
-  DownCount,
-  CommentCount,
-  PostReportCount,
-  createdAt,
-  refetch2,
-}) => {
+export default ({ id, createdAt, description, user, refetch2 }) => {
   const userid = user.id;
   const [comment, setComment] = useState(false);
-  const [isUpS, setIsUp] = useState(isUp);
-  const [isDownS, setIsDown] = useState(isDown);
-  const [isPostReportS, setIsPostReport] = useState(isPostReport);
-  const [upCountS, setUpCount] = useState(UpCount);
-  const [downCountS, setDownCount] = useState(DownCount);
-  const [postReportCountS, setPostReportCount] = useState(PostReportCount);
-  const [selfComments, setSelfComments] = useState([]);
-  const [commentCountS, setCommentCount] = useState(CommentCount);
-
+  const [isUp, setIsUp] = useState(false);
+  const [isDown, setIsDown] = useState(false);
+  const [isPostReport, setIsPostReport] = useState(false);
+  const [upCount, setUpCount] = useState(0);
+  const [downCount, setDownCount] = useState(0);
+  const [postReportCount, setPostReportCount] = useState(0);
   moment.locale("ko");
 
   const navigation = useNavigation();
@@ -250,47 +227,47 @@ export default ({
     },
   });
 
-  // const { data, loading, refetch } = useQuery(SEEPOST, {
-  //   variables: { postId: id },
-  //   fetchPolicy: "network-only",
-  // });
+  const { data, loading, refetch } = useQuery(SEEPOST, {
+    variables: { postId: id },
+    fetchPolicy: "network-only",
+  });
 
-  // const [getComments, { loading: loading2, data: data2 }] = useLazyQuery(
-  //   SEEPOSTCOMMENTS,
-  //   {
-  //     variables: { postId: id },
-  //     fetchPolicy: "network-only",
-  //   }
-  // );
+  const [getComments, { loading: loading2, data: data2 }] = useLazyQuery(
+    SEEPOSTCOMMENTS,
+    {
+      variables: { postId: id },
+      fetchPolicy: "network-only",
+    }
+  );
 
-  // const initialize = async () => {
-  //   const {
-  //     data: { seePost },
-  //   } = await refetch();
-  //   setUpCount(seePost.UpCount);
-  //   setDownCount(seePost.DownCount);
-  //   setPostReportCount(seePost.PostReportCount);
-  //   setIsUp(seePost.isUp);
-  //   setIsDown(seePost.isDown);
-  //   setIsPostReport(seePost.isPostReport);
-  // };
+  const initialize = async () => {
+    const {
+      data: { seePost },
+    } = await refetch();
+    setUpCount(seePost.UpCount);
+    setDownCount(seePost.DownCount);
+    setPostReportCount(seePost.PostReportCount);
+    setIsUp(seePost.isUp);
+    setIsDown(seePost.isDown);
+    setIsPostReport(seePost.isPostReport);
+  };
 
-  // useEffect(() => {
-  //   initialize();
-  // }, []);
+  useEffect(() => {
+    initialize();
+  }, []);
 
   const toggleComment = async () => {
     if (comment == false) {
-      // await getComments();
+      await getComments();
     }
     setComment((Flag) => !Flag);
   };
   const handleUp = async () => {
     try {
-      if (isDownS === true) {
+      if (isDown === true) {
         throw "이미 반대하셨습니다.";
       }
-      if (isUpS === true) {
+      if (isUp === true) {
         setUpCount((l) => l - 1);
       } else {
         setUpCount((l) => l + 1);
@@ -304,10 +281,10 @@ export default ({
 
   const handleDown = async () => {
     try {
-      if (isUpS === true) {
+      if (isUp === true) {
         throw "이미 찬성하셨습니다.";
       }
-      if (isDownS === true) {
+      if (isDown === true) {
         setDownCount((l) => l - 1);
       } else {
         setDownCount((l) => l + 1);
@@ -321,13 +298,12 @@ export default ({
 
   const handleReport = async () => {
     try {
-      if (isPostReportS === true) {
+      if (isPostReport === true) {
         throw "이미 신고하셨습니다.";
       }
       await toggleReportMutation();
-      if (isPostReportS === false) {
+      if (isPostReport === false) {
         setPostReportCount((l) => l + 1);
-        
         Alert.alert("신고 완료", "신고 처리가 완료되었습니다.");
       }
       setIsPostReport((p) => !p);
@@ -351,14 +327,12 @@ export default ({
 
     try {
       setCommentloading(true);
-      const {
-        data: { addComment },
-      } = await addCommentMutation();
-      setSelfComments([...selfComments, addComment]);
-      setCommentCount((l) => l + 1);
+      await addCommentMutation();
+      // await refetch({ variables: { postId: id } });
+      // await refetch2();
+      await getComments();
       commentInput.setValue("");
     } catch (e) {
-      console.log(e);
       Alert.alert("업로드 도중 오류가 발생했습니다.", "다시 시도하기");
     } finally {
       setCommentloading(false);
@@ -378,7 +352,7 @@ export default ({
           </Touchable>
           <PostTimeStamp>{moment(createdAt).fromNow()}</PostTimeStamp>
           <ReportIconContainer onPress={handleReport}>
-            {isPostReportS ? (
+            {isPostReport ? (
               <MaterialIcons
                 name="report"
                 size={23}
@@ -392,9 +366,9 @@ export default ({
               />
             )}
           </ReportIconContainer>
-          <PostReport>{postReportCountS}</PostReport>
+          <PostReport>{postReportCount}</PostReport>
         </PostHeader>
-        {postReportCountS < 100 ? (
+        {postReportCount < 100 ? (
           <PostContentContainer>
             <PostContent>{description}</PostContent>
           </PostContentContainer>
@@ -406,11 +380,11 @@ export default ({
         <PostStatusContainer>
           <PostStatusComment>
             <PostStatusCommentTouchable onPress={toggleComment}>
-              {commentCountS == 0 ? (
+              {data && data.seePost && data.seePost.CommentCount == 0 ? (
                 <PostStatusText>답글작성</PostStatusText>
               ) : (
                 <PostStatusText>
-                  답글: {commentCountS}
+                  답글: {data && data.seePost && data.seePost.CommentCount}
                 </PostStatusText>
               )}
             </PostStatusCommentTouchable>
@@ -418,7 +392,7 @@ export default ({
           <PostStatusBlank></PostStatusBlank>
           <PostStatusUp>
             <UpIconContainer onPress={handleUp}>
-              {isUpS ? (
+              {isUp ? (
                 <FontAwesome5
                   name="thumbs-up"
                   size={15}
@@ -432,11 +406,11 @@ export default ({
                 />
               )}
             </UpIconContainer>
-            <PostStatusUpText>{upCountS}</PostStatusUpText>
+            <PostStatusUpText>{upCount}</PostStatusUpText>
           </PostStatusUp>
           <PostStatusDown>
             <DownIconContainer onPress={handleDown}>
-              {isDownS ? (
+              {isDown ? (
                 <FontAwesome5
                   name="thumbs-down"
                   size={15}
@@ -450,13 +424,15 @@ export default ({
                 />
               )}
             </DownIconContainer>
-            <PostStatusDownText>{downCountS}</PostStatusDownText>
+            <PostStatusDownText>{downCount}</PostStatusDownText>
           </PostStatusDown>
         </PostStatusContainer>
         <CommentContainer>
           <CommentTextContainer>
             {comment &&
-              comments.map((comment) => (
+              data2 &&
+              data2.seePost &&
+              data2.seePost.comments.map((comment) => (
                 // <FlatList
                 //   data={data2.seePost.comments}
                 //   renderItem={({ item, index }) => (
@@ -472,15 +448,11 @@ export default ({
                 <CommentList key={comment.id} {...comment} />
                 // <Text key={comment.id}>{comment.text}</Text>
               ))}
-               {comment &&
-              selfComments.map((comment) => (
-                <CommentList key={comment.id} {...comment} />
-              ))}
           </CommentTextContainer>
-          {comment && (
+          {comment && data2 && (
             <AddCommentContainer>
               <CommentInput
-                {...commentInput} onSubmitEditing={handleNewComment}
+                {...commentInput}
                 placeholder="의견을 입력해 주세요."
               />
               <CommentButtonContainer>
